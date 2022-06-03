@@ -21,9 +21,9 @@
 }
 
 .mario {
+    width: 100px;
     position: absolute;
     bottom: 0;
-    width: 40px;
 }
 
 .jump {
@@ -42,7 +42,7 @@
 
 @keyframes jump {
     0% {
-        bottom: 0; 
+        bottom: 0;
     }
 
     40% {
@@ -50,15 +50,11 @@
     }
 
     50% {
-        bottom: 180px;
+        bottom: 180%;
     }
 
     60% {
-        bottom: 180px;
-    }
-
-    70% {
-        bottom: 180px;
+        bottom: 180%;
     }
 
     100% {
