@@ -16,7 +16,8 @@
 .pipe {
     position: absolute;
     bottom: 0;
-    width: 80px;
+    width: 70px;
+    height: 60px;
     animation: pipe-animation 2s infinite linear;
 }
 
@@ -28,6 +29,10 @@
 
 .jump {
     animation: jump 500ms ease-out;
+}
+
+.gameover {
+    animation: gameover 1.5s;
 }
 
 @keyframes pipe-animation {
@@ -55,5 +60,16 @@
 
     100% {
         bottom: 0;
+    }
+}
+
+@keyframes gameover {
+
+    50% {
+        bottom: 180px;
+    }
+
+    100% {
+        bottom: -80px;
     }
 }
