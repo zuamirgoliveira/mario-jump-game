@@ -5,9 +5,17 @@
 }
 
 .game-board {
-    width: 80%;
+    width: 50%;
     height: 500px;
-    border: 1px solid #333;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(#87CEEB, #E0F6FF);
+}
+
+.grass-container {
+    width: 50%;
+    height: 100px;
     margin: 0 auto;
     position: relative;
     overflow: hidden;
@@ -18,13 +26,14 @@
     bottom: 0;
     width: 70px;
     height: 60px;
-    animation: pipe-animation 2s infinite linear;
+    animation: pipe-animation 1.75s infinite linear;
 }
 
 .mario {
     position: absolute;
     bottom: 0;
     width: 40px;
+    left: 50px
 }
 
 .jump {
@@ -32,7 +41,31 @@
 }
 
 .gameover {
-    animation: gameover 1.5s;
+    animation: game-over 1.5s;
+}
+
+.cloud {
+    top: 175px;
+    width: 50px;
+    height: 10px;
+    position: absolute;
+    animation: clauds-animation 40s infinite linear;
+}
+
+.clouds {
+    top: 40px;
+    width: 300px;
+    height: 75px;
+    position: absolute;
+    animation: clauds-animation-2 30s infinite linear;
+}
+
+.clouds-2 {
+    top: 70px;
+    width: 400px;
+    height: 95px;
+    position: absolute;
+    animation: clauds-animation-3 15s infinite linear;
 }
 
 @keyframes pipe-animation {
@@ -51,11 +84,11 @@
     }
 
     45% {
-        bottom: 180px;
+        bottom: 200px;
     }
 
     55% {
-        bottom: 180px;
+        bottom: 200px;
     }
 
     100% {
@@ -63,7 +96,7 @@
     }
 }
 
-@keyframes gameover {
+@keyframes game-over {
 
     50% {
         bottom: 180px;
@@ -71,5 +104,37 @@
 
     100% {
         bottom: -80px;
+    }
+}
+
+@keyframes clauds-animation {
+    from {
+        right: -50px;
+    }
+
+    to {
+        right: 100%;
+    }
+
+}
+
+@keyframes clauds-animation-2 {
+    from {
+        right: -300px;
+    }
+
+    to {
+        right: 100%;
+    }
+
+}
+
+@keyframes clauds-animation-3 {
+    from {
+        right: -400px;
+    }
+
+    to {
+        right: 100%;
     }
 }
