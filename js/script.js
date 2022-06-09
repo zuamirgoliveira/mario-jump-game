@@ -6,6 +6,7 @@ const clouds = document.querySelector('.clouds');
 const clouds2 = document.querySelector('.clouds-2');
 const score = document.getElementById('score');
 const gameOver = document.getElementById('game-over');
+const looseMessage = document.getElementById('loose');
 
 const jump = () => {
     mario.classList.add('jump');
@@ -17,7 +18,9 @@ const jump = () => {
 }
 
 const loopScore = setInterval(() => {
+
     score.innerHTML++;
+    
 }, 100);
 
 const loop = setInterval(() => {
@@ -28,7 +31,10 @@ const loop = setInterval(() => {
     const clouds2Position = clouds2.offsetLeft;
     const marioPosition = +window.getComputedStyle(mario).bottom.replace('px', '');
     
-    if (pipePosition <= 85 && pipePosition > -10 && marioPosition < 64) {
+    if (pipePosition <= 85 && pipePosition > 10 && marioPosition < 50) {
+        
+        looseMessage.innerHTML = 'FIM DE JOGO';
+
         pipe.style.animation = 'none';
         cloud.style.animation = 'none';
         clouds.style.animation = 'none';
@@ -43,8 +49,7 @@ const loop = setInterval(() => {
         mario.src = './images/mario-game-over.png';
 
         setTimeout(() => {
-            mario.classList.add('gameover');
-
+            mario.classList.add('game-over');
             setInterval(() => {
                 mario.style.animation = 'none';
                 mario.style.bottom = `-80px`;

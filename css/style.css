@@ -24,8 +24,8 @@
 .pipe {
     position: absolute;
     bottom: 0;
-    width: 70px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     animation: pipe-animation 1.75s infinite linear;
 }
 
@@ -33,14 +33,14 @@
     position: absolute;
     bottom: 0;
     width: 40px;
-    left: 50px
+    left: 50px;
 }
 
 .jump {
-    animation: jump 500ms ease-out;
+    animation: jump 500ms normal ease-out;
 }
 
-.gameover {
+.game-over {
     animation: game-over 1.5s;
 }
 
@@ -66,6 +66,34 @@
     height: 95px;
     position: absolute;
     animation: clauds-animation-3 15s infinite linear;
+}
+
+.score-container {
+    color: white;
+    position: relative;
+    font-family: Verdana, sans-serif;
+    font-weight: bold;
+    display: flex;
+    margin: 10px;
+}
+
+#text-score {
+    margin: 5px;
+}
+
+#score {
+    margin: 5px;
+}
+
+#loose {
+    color: white;
+    position: absolute;
+    font-family: Verdana, sans-serif;
+    font-weight: bold;
+    font-size: 50px;
+    display: flex;
+    align-items: center;
+
 }
 
 @keyframes pipe-animation {
@@ -97,7 +125,6 @@
 }
 
 @keyframes game-over {
-
     50% {
         bottom: 180px;
     }
