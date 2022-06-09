@@ -4,15 +4,21 @@ const grass = document.querySelector('.grass');
 const cloud = document.querySelector('.cloud');
 const clouds = document.querySelector('.clouds');
 const clouds2 = document.querySelector('.clouds-2');
+const score = document.getElementById('score');
+const gameOver = document.getElementById('game-over');
 
 const jump = () => {
     mario.classList.add('jump');
-
+    
     setTimeout(() => {
         mario.classList.remove('jump');
     }, 500);
 
 }
+
+const loopScore = setInterval(() => {
+    score.innerHTML++;
+}, 100);
 
 const loop = setInterval(() => {
 
@@ -47,8 +53,10 @@ const loop = setInterval(() => {
         }, 500);
 
         clearInterval(loop);
+        clearInterval(loopScore);
     }
 
 }, 10);
+
 
 document.addEventListener('keydown', jump);

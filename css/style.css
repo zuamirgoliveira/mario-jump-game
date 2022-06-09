@@ -5,7 +5,7 @@
 }
 
 .game-board {
-    width: 50%;
+    width: 75%;
     height: 500px;
     margin: 0 auto;
     position: relative;
@@ -14,7 +14,7 @@
 }
 
 .grass-container {
-    width: 50%;
+    width: 75%;
     height: 100px;
     margin: 0 auto;
     position: relative;
