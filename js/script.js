@@ -24,7 +24,7 @@ const loopScore = setInterval(() => {
 }, 100);
 
 const loop = setInterval(() => {
-
+    
     const pipePosition = pipe.offsetLeft;
     const cloudPosition = cloud.offsetLeft;
     const cloudsPosition = clouds.offsetLeft;
