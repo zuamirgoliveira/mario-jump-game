@@ -26,7 +26,7 @@
     bottom: 0;
     width: 50px;
     height: 50px;
-    animation: pipe-animation 1.75s infinite linear;
+    animation: pipe-animation 1.5s infinite linear;
 }
 
 .mario {
