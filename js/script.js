@@ -11,11 +11,70 @@ const btnStartGame = document.getElementById('btn-start-game');
 const logoImg = document.getElementById('logo-img');
 const gameOverImg = document.getElementById('game-over-img');
 const pressKeyMessage = document.getElementById('press-key-message');
+const muteButton = document.getElementById('mute-button');
 
 // Audio Context para sons
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+let isMuted = false;
+let backgroundMusic = null;
+
+// Criar música de fundo simples (melodia estilo Mario)
+function createBackgroundMusic() {
+    const notes = [
+        523, 659, 784, 1047,  // E5, E6, G5, C6
+        784, 659, 523, 587,   // G5, E6, E5, D5
+        523, 440, 494, 523,   // E5, A4, B4, E5
+        587, 523, 494, 440    // D5, E5, B4, A4
+    ];
+    
+    let noteIndex = 0;
+    
+    function playNextNote() {
+        if (isMuted || !gameActive) {
+            setTimeout(playNextNote, 500);
+            return;
+        }
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(notes[noteIndex], audioContext.currentTime);
+        
+        gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+        
+        noteIndex = (noteIndex + 1) % notes.length;
+        
+        setTimeout(playNextNote, 400);
+    }
+    
+    playNextNote();
+}
+
+function toggleMute() {
+    isMuted = !isMuted;
+    
+    if (isMuted) {
+        muteButton.textContent = '🔇';
+    } else {
+        muteButton.textContent = '🔊';
+    }
+	
+	muteButton.blur();
+}
+
+muteButton.addEventListener('click', toggleMute);
 
 function playJumpSound() {
+	if (isMuted) return;
+	
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
     
@@ -34,6 +93,8 @@ function playJumpSound() {
 }
 
 function playGameOverSound() {
+	 if (isMuted) return;
+	 
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
     
@@ -52,6 +113,8 @@ function playGameOverSound() {
 }
 
 function playNightSound() {
+	 if (isMuted) return;
+	 
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
     
@@ -71,6 +134,8 @@ function playNightSound() {
 }
 
 function playDaySound() {
+	 if (isMuted) return;
+	 
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
     
@@ -423,7 +488,7 @@ const startGame = () =>  {
 function startGameFirstTime() {
     pressKeyMessage.style.display = 'none';
     gameActive = true;
-    // O jogo já está rodando, só esconder a mensagem
+    createBackgroundMusic();
 }
 
 // Inicializar high score display
