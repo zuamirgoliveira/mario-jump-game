@@ -139,6 +139,7 @@ function createJumpParticles() {
 
 // Controle do modo noturno
 let isNight = false;
+let moonElement = null;
 
 function updateBackground() {
     const gameBoard = document.querySelector('.game-board');
@@ -208,6 +209,33 @@ function flashLightning(callback) {
 function createStars() {
     const gameBoard = document.querySelector('.game-board');
     
+    // Criar lua
+    if (!moonElement) {
+        moonElement = document.createElement('div');
+        moonElement.className = 'moon';
+        moonElement.style.position = 'absolute';
+        moonElement.style.width = '60px';
+        moonElement.style.height = '60px';
+        moonElement.style.backgroundColor = '#FFFDE7';
+        moonElement.style.borderRadius = '50%';
+        moonElement.style.boxShadow = '0 0 20px #FFFDE7, 0 0 40px rgba(255, 253, 231, 0.5)';
+        moonElement.style.top = '30px';
+        moonElement.style.right = '40px';
+        moonElement.style.zIndex = '0';
+        moonElement.style.opacity = '0';
+        moonElement.style.transition = 'opacity 2s ease';
+        
+        gameBoard.appendChild(moonElement);
+    }
+    
+    // Mostrar lua
+    setTimeout(() => {
+        if (moonElement) {
+            moonElement.style.opacity = '1';
+        }
+    }, 100);
+    
+    // Criar estrelas
     for (let i = 0; i < 20; i++) {
         const star = document.createElement('div');
         star.className = 'star';
@@ -231,6 +259,12 @@ function createStars() {
 }
 
 function removeStars() {
+    // Esconder lua
+    if (moonElement) {
+        moonElement.style.opacity = '0';
+    }
+    
+    // Esconder e remover estrelas
     const stars = document.querySelectorAll('.star');
     stars.forEach(star => {
         star.style.opacity = '0';
@@ -377,6 +411,11 @@ const startGame = () =>  {
 	cloud.style.filter = 'brightness(1) opacity(1)';
     clouds.style.filter = 'brightness(1) opacity(1)';
     clouds2.style.filter = 'brightness(1) opacity(1)';
+	
+	if (moonElement) {
+        moonElement.remove();
+        moonElement = null;
+    }
     
     location.reload();
 }
