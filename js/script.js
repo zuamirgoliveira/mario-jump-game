@@ -11,7 +11,7 @@ const btnStartGame = document.getElementById('btn-start-game');
 const logoImg = document.getElementById('logo-img');
 const gameOverImg = document.getElementById('game-over-img');
 
-// Adicione no início do arquivo, após as constantes
+// Audio Context para sons
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 function playJumpSound() {
@@ -21,16 +21,13 @@ function playJumpSound() {
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
     
-    // Configurar o som do pulo (agudo e rápido)
     oscillator.type = 'square';
     oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.1);
     
-    // Configurar o volume (começa alto e diminui rapidamente)
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
     
-    // Tocar o som por 200ms
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.2);
 }
@@ -42,18 +39,53 @@ function playGameOverSound() {
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
     
-    // Som descendo (game over triste)
     oscillator.type = 'square';
     oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.5);
     
-    // Volume médio e decaindo
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
     
-    // Tocar por 800ms
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.8);
+}
+
+function playNightSound() {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Som grave e longo - trovão
+    oscillator.type = 'sawtooth';
+    oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.5);
+    
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 1);
+}
+
+function playDaySound() {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Som agudo e alegre - passarinho
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.15);
+    
+    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
 }
 
 function createJumpParticles() {
@@ -63,7 +95,6 @@ function createJumpParticles() {
     for (let i = 0; i < 8; i++) {
         const particle = document.createElement('div');
         
-        // Estilo base da partícula
         particle.style.position = 'absolute';
         particle.style.width = '4px';
         particle.style.height = '4px';
@@ -76,13 +107,11 @@ function createJumpParticles() {
         
         gameBoard.appendChild(particle);
         
-        // Criar ângulo e distância aleatória
-        const angle = (Math.random() * 60 + 210) * (Math.PI / 180); // -30° a +30°
-        const distance = 15 + Math.random() * 25; // Distância que vai
+        const angle = (Math.random() * 60 + 210) * (Math.PI / 180);
+        const distance = 15 + Math.random() * 25;
         const moveX = Math.cos(angle) * distance;
-        const moveY = 10 + Math.random() * 30; // Altura que sobe
+        const moveY = 10 + Math.random() * 30;
         
-        // Usar CSS animation em vez de setInterval
         particle.animate([
             {
                 transform: 'translate(0px, 0px)',
@@ -107,6 +136,92 @@ function createJumpParticles() {
     }
 }
 
+// Controle do modo noturno
+let isNight = false;
+
+function updateBackground() {
+    const gameBoard = document.querySelector('.game-board');
+    
+    const shouldBeNight = Math.floor(scoreCount / 10) % 2 === 1;
+    
+    if (shouldBeNight && !isNight) {
+        // Efeito de raio antes de escurecer
+        flashLightning(() => {
+            // Modo noite após o raio
+            gameBoard.style.background = 'linear-gradient(#1a1a2e, #16213e)';
+            createStars();
+            isNight = true;
+            playNightSound();
+        });
+        
+    } else if (!shouldBeNight && isNight) {
+        // Modo dia
+        gameBoard.style.background = 'linear-gradient(#87CEEB, #E0F6FF)';
+        removeStars();
+        isNight = false;
+        playDaySound();
+    }
+}
+
+function flashLightning(callback) {
+    const gameBoard = document.querySelector('.game-board');
+    let flashes = 0;
+    const maxFlashes = 3;
+    
+    const lightningInterval = setInterval(() => {
+        if (flashes >= maxFlashes) {
+            clearInterval(lightningInterval);
+            if (callback) callback();
+            return;
+        }
+        
+        // Flash branco
+        gameBoard.style.background = 'linear-gradient(#ffffff, #f0f0f0)';
+        
+        setTimeout(() => {
+            // Volta para transição
+            gameBoard.style.background = 'linear-gradient(#4a4a6e, #2a2a4e)';
+        }, 50);
+        
+        flashes++;
+    }, 150);
+}
+
+function createStars() {
+    const gameBoard = document.querySelector('.game-board');
+    
+    for (let i = 0; i < 20; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.position = 'absolute';
+        star.style.width = '2px';
+        star.style.height = '2px';
+        star.style.backgroundColor = 'white';
+        star.style.borderRadius = '50%';
+        star.style.zIndex = '0';
+        star.style.opacity = '0';
+        star.style.transition = 'opacity 2s ease';
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 60}%`;
+        
+        gameBoard.appendChild(star);
+        
+        setTimeout(() => {
+            star.style.opacity = '1';
+        }, 100);
+    }
+}
+
+function removeStars() {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+        star.style.opacity = '0';
+        setTimeout(() => {
+            star.remove();
+        }, 2000);
+    });
+}
+
 let gameActive = true;
 let scoreCount = 0;
 let pipePassed = false;
@@ -115,13 +230,11 @@ let pipePassed = false;
 let highScore = localStorage.getItem('marioJumpHighScore') || 0;
 highScore = parseInt(highScore);
 
-// Atualizar o display do high score (vamos adicionar depois de criar o elemento)
 function updateHighScoreDisplay() {
     const highScoreElement = document.getElementById('high-score');
     if (highScoreElement) {
         highScoreElement.innerHTML = highScore;
         
-        // Efeito visual ao atualizar high score
         highScoreElement.style.transition = 'none';
         highScoreElement.style.transform = 'scale(1.5)';
         highScoreElement.style.color = '#FFD700';
@@ -134,12 +247,11 @@ function updateHighScoreDisplay() {
     }
 }
 
-
 const jump = () => {
     if (!gameActive) return;
     
     mario.classList.add('jump');
-	playJumpSound();
+    playJumpSound();
     createJumpParticles();
     setTimeout(() => {
         mario.classList.remove('jump');
@@ -156,29 +268,32 @@ const loop = setInterval(() => {
     const marioPosition = +window.getComputedStyle(mario).bottom.replace('px', '');
     
     // Verificar se o Mario passou pelo pipe
-	if (pipePosition < 50 && pipePosition > 0 && !pipePassed) {
-		scoreCount++;
-		score.innerHTML = scoreCount;
-		pipePassed = true;
-		
-		// Efeito visual ao pontuar - versão corrigida
-		score.style.transition = 'none';
-		score.style.transform = 'scale(1.8)';
-		score.style.color = '#FFD700'; // Dourado
-		
-		setTimeout(() => {
-			score.style.transition = 'all 0.3s ease-out';
-			score.style.transform = 'scale(1)';
-			score.style.color = 'white';
-		}, 50);
-		
-		// Atualizar high score em tempo real
-		if (scoreCount > highScore) {
-			highScore = scoreCount;
-			localStorage.setItem('marioJumpHighScore', highScore);
-			updateHighScoreDisplay();
-		}
-	}
+    if (pipePosition < 50 && pipePosition > 0 && !pipePassed) {
+        scoreCount++;
+        score.innerHTML = scoreCount;
+        pipePassed = true;
+        
+        // Atualizar tema noite/dia
+        updateBackground();
+        
+        // Efeito visual ao pontuar
+        score.style.transition = 'none';
+        score.style.transform = 'scale(1.8)';
+        score.style.color = '#FFD700';
+        
+        setTimeout(() => {
+            score.style.transition = 'all 0.3s ease-out';
+            score.style.transform = 'scale(1)';
+            score.style.color = 'white';
+        }, 50);
+        
+        // Atualizar high score em tempo real
+        if (scoreCount > highScore) {
+            highScore = scoreCount;
+            localStorage.setItem('marioJumpHighScore', highScore);
+            updateHighScoreDisplay();
+        }
+    }
     
     // Resetar a flag quando um novo pipe aparece
     if (pipePosition > 80) {
@@ -189,7 +304,7 @@ const loop = setInterval(() => {
     if (pipePosition <= 85 && pipePosition > 10 && marioPosition < 50) {
         gameActive = false;
         playGameOverSound();
-        // Salvar high score final
+        
         if (scoreCount > highScore) {
             highScore = scoreCount;
             localStorage.setItem('marioJumpHighScore', highScore);
@@ -199,7 +314,7 @@ const loop = setInterval(() => {
         btnStartGame.style.visibility = 'visible';
 
         pipe.style.animation = 'none';
-		grass.style.animation = 'none';
+        grass.style.animation = 'none';
         cloud.style.animation = 'none';
         clouds.style.animation = 'none';
         clouds2.style.animation = 'none';
@@ -231,6 +346,7 @@ const startGame = () =>  {
     scoreCount = 0;
     score.innerHTML = '0';
     pipePassed = false;
+    isNight = false;
     
     location.reload();
 }

@@ -11,6 +11,7 @@
     position: relative;
     overflow: hidden;
     background: linear-gradient(#87CEEB, #E0F6FF);
+	transition: background 0.3s ease;
 }
 
 .grass-container {
@@ -238,4 +239,16 @@
 #high-score {
     display: inline-block;
     transition: all 0.3s ease-out;
+}
+
+/* Estrelas que aparecem à noite */
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background-color: white;
+    border-radius: 50%;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 2s ease;
 }
