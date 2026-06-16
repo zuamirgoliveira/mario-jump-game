@@ -372,6 +372,8 @@ const jump = () => {
         }
         return;
     }
+	
+	if (mario.classList.contains('jump')) { return; }
     
     mario.classList.add('jump');
     playJumpSound();
