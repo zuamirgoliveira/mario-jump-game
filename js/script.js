@@ -70,8 +70,6 @@ function toggleMute() {
 	muteButton.blur();
 }
 
-muteButton.addEventListener('click', toggleMute);
-
 function playJumpSound() {
 	if (isMuted) return;
 	
@@ -496,4 +494,23 @@ function startGameFirstTime() {
 // Inicializar high score display
 updateHighScoreDisplay();
 
+muteButton.addEventListener('click', (event) => {
+    event.stopPropagation(); // Impede que o clique chegue no document
+    toggleMute();
+});
+
 document.addEventListener('keydown', jump);
+
+// Suporte a touch para dispositivos móveis
+document.addEventListener('touchstart', (event) => {
+    event.preventDefault(); // Evita scroll da página
+    jump();
+});
+
+// Também funciona com clique do mouse
+document.addEventListener('click', (event) => {
+    // Não ativa se clicar no botão de mute
+    if (event.target.id !== 'mute-button') {
+        jump();
+    }
+});
