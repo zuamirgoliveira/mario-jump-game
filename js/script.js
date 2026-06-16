@@ -10,6 +10,7 @@ const looseMessage = document.getElementById('loose');
 const btnStartGame = document.getElementById('btn-start-game');
 const logoImg = document.getElementById('logo-img');
 const gameOverImg = document.getElementById('game-over-img');
+const pressKeyMessage = document.getElementById('press-key-message');
 
 // Audio Context para sons
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -152,6 +153,7 @@ function updateBackground() {
             createStars();
             isNight = true;
             playNightSound();
+            updateCloudsNightMode(true); // 🌙 Nuvens escuras
         });
         
     } else if (!shouldBeNight && isNight) {
@@ -160,6 +162,22 @@ function updateBackground() {
         removeStars();
         isNight = false;
         playDaySound();
+        updateCloudsNightMode(false); // ☀️ Nuvens claras
+    }
+}
+
+// NOVA FUNÇÃO: Controla a aparência das nuvens
+function updateCloudsNightMode(isNight) {
+    if (isNight) {
+        // Nuvens ficam acinzentadas e mais transparentes
+        cloud.style.filter = 'brightness(0.4) opacity(0.6)';
+        clouds.style.filter = 'brightness(0.4) opacity(0.6)';
+        clouds2.style.filter = 'brightness(0.4) opacity(0.6)';
+    } else {
+        // Nuvens voltam ao normal
+        cloud.style.filter = 'brightness(1) opacity(1)';
+        clouds.style.filter = 'brightness(1) opacity(1)';
+        clouds2.style.filter = 'brightness(1) opacity(1)';
     }
 }
 
@@ -222,7 +240,7 @@ function removeStars() {
     });
 }
 
-let gameActive = true;
+let gameActive = false;
 let scoreCount = 0;
 let pipePassed = false;
 
@@ -248,7 +266,13 @@ function updateHighScoreDisplay() {
 }
 
 const jump = () => {
-    if (!gameActive) return;
+    if (!gameActive) {
+        // Se o jogo não começou, inicia ao pressionar qualquer tecla
+        if (pressKeyMessage.style.display !== 'none') {
+            startGameFirstTime();
+        }
+        return;
+    }
     
     mario.classList.add('jump');
     playJumpSound();
@@ -311,6 +335,7 @@ const loop = setInterval(() => {
         }
         
         gameOverImg.src = './images/game_over.svg';
+		gameOverImg.style.display = 'block';
         btnStartGame.style.visibility = 'visible';
 
         pipe.style.animation = 'none';
@@ -347,8 +372,19 @@ const startGame = () =>  {
     score.innerHTML = '0';
     pipePassed = false;
     isNight = false;
+	gameOverImg.style.display = 'none';
+	
+	cloud.style.filter = 'brightness(1) opacity(1)';
+    clouds.style.filter = 'brightness(1) opacity(1)';
+    clouds2.style.filter = 'brightness(1) opacity(1)';
     
     location.reload();
+}
+
+function startGameFirstTime() {
+    pressKeyMessage.style.display = 'none';
+    gameActive = true;
+    // O jogo já está rodando, só esconder a mensagem
 }
 
 // Inicializar high score display
