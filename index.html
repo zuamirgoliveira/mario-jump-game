@@ -2,8 +2,10 @@
 <html>
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/style.css">
+    <script src="./js/script.js" defer></script>
+
     <title>Mario Jump</title>
 </head>
 <body>
@@ -12,13 +14,13 @@
         <div class="score-container">
             <div id="text-score">Score:</div>
             <div id="score">0</div>
+			<div id="text-high-score">High Score:</div>
+			<div id="high-score">0</div>
         </div>
         
         <div class="start-container">
             <img src="" id="game-over-img">
-            <button id="btn-start-game" style="visibility:hidden;">
-                <img src="./images/icons8-repeat-40.png" class="reload">
-            </button>
+            <button id="btn-start-game" onclick="startGame()" class="start-button"><img src="./images/icons8-repeat-40.png" class="reload"></button>
         </div>
 
         <img src="./images/super-mario-bros-cloud-little.png" class="cloud">
@@ -26,11 +28,10 @@
         <img src="./images/super-mario-bros-clouds_2.png" class="clouds-2">
         <img src="./images/mario-sprint.gif" class="mario">
         <img src="./images/mario-pipe.png" class="pipe">
+
     </div>
     <div class="grass-container">
-        <img src="./images/mario-grass.png" class="grass">
-    </div>
-    
-    <script src="./js/script.js"></script>
+		<div class="grass"></div>
+	</div>
 </body>
 </html>

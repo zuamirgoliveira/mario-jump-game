@@ -1,251 +1,241 @@
-// script.js - Versão Refatorada
+const mario = document.querySelector('.mario');
+const pipe = document.querySelector('.pipe');
+const grass = document.querySelector('.grass');
+const cloud = document.querySelector('.cloud');
+const clouds = document.querySelector('.clouds');
+const clouds2 = document.querySelector('.clouds-2');
+const score = document.getElementById('score');
+const gameOver = document.getElementById('game-over');
+const looseMessage = document.getElementById('loose');
+const btnStartGame = document.getElementById('btn-start-game');
+const logoImg = document.getElementById('logo-img');
+const gameOverImg = document.getElementById('game-over-img');
 
-// ===== CONFIGURAÇÕES =====
-const CONFIG = {
-    gravity: 0.6,
-    jumpForce: 12,
-    pipeSpeed: 3,
-    pipeInterval: 1500, // ms entre pipes
-    groundHeight: 50, // altura do chão
-};
+// Adicione no início do arquivo, após as constantes
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-// ===== ESTADO DO JOGO =====
-const state = {
-    isRunning: false,
-    isJumping: false,
-    score: 0,
-    highScore: parseInt(localStorage.getItem('marioHighScore')) || 0,
-    pipeTimer: null,
-    animationId: null,
-    pipes: [],
-    gameOver: false,
-};
+function playJumpSound() {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Configurar o som do pulo (agudo e rápido)
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.1);
+    
+    // Configurar o volume (começa alto e diminui rapidamente)
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    
+    // Tocar o som por 200ms
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+}
 
-// ===== DOM REFS =====
-const elements = {
-    mario: document.querySelector('.mario'),
-    pipe: document.querySelector('.pipe'), // pipe inicial
-    grass: document.querySelector('.grass'),
-    cloud: document.querySelector('.cloud'),
-    clouds: document.querySelector('.clouds'),
-    clouds2: document.querySelector('.clouds-2'),
-    score: document.getElementById('score'),
-    gameOver: document.getElementById('game-over'),
-    btnStart: document.getElementById('btn-start-game'),
-    logoImg: document.getElementById('logo-img'),
-    gameOverImg: document.getElementById('game-over-img'),
-    highScore: document.getElementById('high-score'), // novo
-};
+function playGameOverSound() {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Som descendo (game over triste)
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.5);
+    
+    // Volume médio e decaindo
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+    
+    // Tocar por 800ms
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.8);
+}
 
-// ===== FUNÇÕES DO JOGO =====
+function createJumpParticles() {
+    const gameBoard = document.querySelector('.game-board');
+    const marioLeft = 50;
+    
+    for (let i = 0; i < 8; i++) {
+        const particle = document.createElement('div');
+        
+        // Estilo base da partícula
+        particle.style.position = 'absolute';
+        particle.style.width = '4px';
+        particle.style.height = '4px';
+        particle.style.backgroundColor = '#8B7355';
+        particle.style.left = `${marioLeft + 20}px`;
+        particle.style.bottom = '5px';
+        particle.style.borderRadius = '50%';
+        particle.style.zIndex = '3';
+        particle.style.pointerEvents = 'none';
+        
+        gameBoard.appendChild(particle);
+        
+        // Criar ângulo e distância aleatória
+        const angle = (Math.random() * 60 + 210) * (Math.PI / 180); // -30° a +30°
+        const distance = 15 + Math.random() * 25; // Distância que vai
+        const moveX = Math.cos(angle) * distance;
+        const moveY = 10 + Math.random() * 30; // Altura que sobe
+        
+        // Usar CSS animation em vez de setInterval
+        particle.animate([
+            {
+                transform: 'translate(0px, 0px)',
+                opacity: 1
+            },
+            {
+                transform: `translate(${moveX}px, -${moveY}px)`,
+                opacity: 0.5,
+                offset: 0.3
+            },
+            {
+                transform: `translate(${moveX * 1.5}px, -${moveY * 0.3}px)`,
+                opacity: 0
+            }
+        ], {
+            duration: 300 + Math.random() * 200,
+            easing: 'ease-out',
+            fill: 'forwards'
+        }).onfinish = () => {
+            particle.remove();
+        };
+    }
+}
 
-// Pulo
+let gameActive = true;
+let scoreCount = 0;
+let pipePassed = false;
+
+// Carregar high score do localStorage
+let highScore = localStorage.getItem('marioJumpHighScore') || 0;
+highScore = parseInt(highScore);
+
+// Atualizar o display do high score (vamos adicionar depois de criar o elemento)
+function updateHighScoreDisplay() {
+    const highScoreElement = document.getElementById('high-score');
+    if (highScoreElement) {
+        highScoreElement.innerHTML = highScore;
+        
+        // Efeito visual ao atualizar high score
+        highScoreElement.style.transition = 'none';
+        highScoreElement.style.transform = 'scale(1.5)';
+        highScoreElement.style.color = '#FFD700';
+        
+        setTimeout(() => {
+            highScoreElement.style.transition = 'all 0.3s ease-out';
+            highScoreElement.style.transform = 'scale(1)';
+            highScoreElement.style.color = 'white';
+        }, 50);
+    }
+}
+
+
 const jump = () => {
-    if (!state.isRunning || state.isJumping || state.gameOver) return;
+    if (!gameActive) return;
     
-    state.isJumping = true;
-    let jumpCount = 0;
-    const maxJump = 200; // altura máxima em px
-    
-    const jumpInterval = setInterval(() => {
-        if (jumpCount >= maxJump) {
-            clearInterval(jumpInterval);
-            // Descida com gravidade
-            const fallInterval = setInterval(() => {
-                const currentBottom = parseInt(elements.mario.style.bottom) || 0;
-                if (currentBottom <= 0) {
-                    elements.mario.style.bottom = '0px';
-                    state.isJumping = false;
-                    clearInterval(fallInterval);
-                } else {
-                    elements.mario.style.bottom = `${currentBottom - CONFIG.gravity * 2}px`;
-                }
-            }, 16);
-            return;
-        }
-        
-        jumpCount += CONFIG.jumpForce;
-        elements.mario.style.bottom = `${jumpCount}px`;
-    }, 16);
-};
+    mario.classList.add('jump');
+	playJumpSound();
+    createJumpParticles();
+    setTimeout(() => {
+        mario.classList.remove('jump');
+    }, 500);
+}
 
-// Criar pipe
-const createPipe = () => {
-    if (!state.isRunning || state.gameOver) return;
+const loop = setInterval(() => {
+    if (!gameActive) return;
     
-    const newPipe = document.createElement('img');
-    newPipe.src = './images/mario-pipe.png';
-    newPipe.className = 'pipe';
-    newPipe.style.right = '-80px';
-    newPipe.style.animation = 'none'; // controle manual
+    const pipePosition = pipe.offsetLeft;
+    const cloudPosition = cloud.offsetLeft;
+    const cloudsPosition = clouds.offsetLeft;
+    const clouds2Position = clouds2.offsetLeft;
+    const marioPosition = +window.getComputedStyle(mario).bottom.replace('px', '');
     
-    document.querySelector('.game-board').appendChild(newPipe);
-    state.pipes.push(newPipe);
-};
-
-// Atualizar pipes
-const updatePipes = () => {
-    state.pipes.forEach((pipe, index) => {
-        const currentRight = parseInt(pipe.style.right) || -80;
-        pipe.style.right = `${currentRight + CONFIG.pipeSpeed}px`;
-        
-        // Verificar colisão
-        const marioRect = elements.mario.getBoundingClientRect();
-        const pipeRect = pipe.getBoundingClientRect();
-        
-        if (checkCollision(marioRect, pipeRect)) {
-            gameOver();
-        }
-        
-        // Remover pipe fora da tela
-        if (currentRight > window.innerWidth + 100) {
-            pipe.remove();
-            state.pipes.splice(index, 1);
-            updateScore();
-        }
-    });
-};
-
-// Colisão precisa
-const checkCollision = (rect1, rect2) => {
-    const padding = 10; // margem de erro
-    return rect1.x < rect2.x + rect2.width - padding &&
-           rect1.x + rect1.width - padding > rect2.x &&
-           rect1.y < rect2.y + rect2.height - padding &&
-           rect1.y + rect1.height - padding > rect2.y;
-};
-
-// Atualizar score
-const updateScore = () => {
-    state.score++;
-    elements.score.textContent = state.score;
-};
-
-// Game Over
-const gameOver = () => {
-    if (state.gameOver) return;
+    // Verificar se o Mario passou pelo pipe
+	if (pipePosition < 50 && pipePosition > 0 && !pipePassed) {
+		scoreCount++;
+		score.innerHTML = scoreCount;
+		pipePassed = true;
+		
+		// Efeito visual ao pontuar - versão corrigida
+		score.style.transition = 'none';
+		score.style.transform = 'scale(1.8)';
+		score.style.color = '#FFD700'; // Dourado
+		
+		setTimeout(() => {
+			score.style.transition = 'all 0.3s ease-out';
+			score.style.transform = 'scale(1)';
+			score.style.color = 'white';
+		}, 50);
+		
+		// Atualizar high score em tempo real
+		if (scoreCount > highScore) {
+			highScore = scoreCount;
+			localStorage.setItem('marioJumpHighScore', highScore);
+			updateHighScoreDisplay();
+		}
+	}
     
-    state.gameOver = true;
-    state.isRunning = false;
-    
-    // Atualizar high score
-    if (state.score > state.highScore) {
-        state.highScore = state.score;
-        localStorage.setItem('marioHighScore', state.highScore);
+    // Resetar a flag quando um novo pipe aparece
+    if (pipePosition > 80) {
+        pipePassed = false;
     }
     
-    // Mostrar game over
-    elements.gameOverImg.src = './images/game_over.svg';
-    elements.btnStart.style.visibility = 'visible';
-    elements.mario.src = './images/mario-game-over.png';
-    
-    // Limpar loops
-    state.pipes.forEach(pipe => pipe.remove());
-    state.pipes = [];
-    
-    if (state.pipeTimer) clearInterval(state.pipeTimer);
-    if (state.animationId) cancelAnimationFrame(state.animationId);
-};
-
-// Reset game
-const resetGame = () => {
-    // Resetar estado
-    state.isRunning = false;
-    state.isJumping = false;
-    state.gameOver = false;
-    state.score = 0;
-    state.pipes = [];
-    
-    // Resetar elementos
-    elements.mario.src = './images/mario-sprint.gif';
-    elements.mario.style.bottom = '0px';
-    elements.mario.className = 'mario';
-    elements.gameOverImg.src = '';
-    elements.btnStart.style.visibility = 'hidden';
-    elements.score.textContent = '0';
-    
-    // Remover pipes extras
-    document.querySelectorAll('.pipe').forEach(pipe => {
-        if (pipe !== elements.pipe) pipe.remove();
-    });
-    
-    // Resetar pipe original
-    elements.pipe.style.animation = 'pipe-animation 1.5s infinite linear';
-    elements.pipe.style.right = '';
-    elements.pipe.style.left = '';
-    
-    // Resetar nuvens
-    elements.cloud.style.animation = 'clauds-animation 40s infinite linear';
-    elements.clouds.style.animation = 'clauds-animation-2 30s infinite linear';
-    elements.clouds2.style.animation = 'clauds-animation-3 15s infinite linear';
-    
-    // Iniciar jogo
-    startGame();
-};
-
-// Iniciar jogo
-const startGame = () => {
-    if (state.isRunning) return;
-    
-    state.isRunning = true;
-    state.gameOver = false;
-    state.score = 0;
-    elements.score.textContent = '0';
-    elements.btnStart.style.visibility = 'hidden';
-    elements.gameOverImg.src = '';
-    
-    // Loop principal com requestAnimationFrame
-    let lastTime = 0;
-    const gameLoop = (timestamp) => {
-        if (!state.isRunning) return;
+    // Verificar colisão
+    if (pipePosition <= 85 && pipePosition > 10 && marioPosition < 50) {
+        gameActive = false;
+        playGameOverSound();
+        // Salvar high score final
+        if (scoreCount > highScore) {
+            highScore = scoreCount;
+            localStorage.setItem('marioJumpHighScore', highScore);
+        }
         
-        const deltaTime = timestamp - lastTime;
-        lastTime = timestamp;
-        
-        updatePipes();
-        
-        state.animationId = requestAnimationFrame(gameLoop);
-    };
-    
-    state.animationId = requestAnimationFrame(gameLoop);
-    
-    // Gerar pipes periodicamente
-    if (state.pipeTimer) clearInterval(state.pipeTimer);
-    state.pipeTimer = setInterval(createPipe, CONFIG.pipeInterval);
-};
+        gameOverImg.src = './images/game_over.svg';
+        btnStartGame.style.visibility = 'visible';
 
-// ===== EVENT LISTENERS =====
-document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' || e.key === ' ') {
-        e.preventDefault();
-        jump();
+        pipe.style.animation = 'none';
+		grass.style.animation = 'none';
+        cloud.style.animation = 'none';
+        clouds.style.animation = 'none';
+        clouds2.style.animation = 'none';
+        
+        pipe.style.left = `${pipePosition}px`;
+        mario.style.bottom = `${marioPosition}px`;
+        cloud.style.left = `${cloudPosition}px`;
+        clouds.style.left = `${cloudsPosition}px`;
+        clouds2.style.left = `${clouds2Position}px`;
+
+        mario.src = './images/mario-game-over.png';
+        mario.classList.remove('jump');
+
+        setTimeout(() => {
+            mario.classList.add('game-over');
+            setTimeout(() => {
+                mario.style.animation = 'none';
+                mario.style.bottom = '-80px';
+            }, 1500);
+        }, 500);
+
+        clearInterval(loop);
     }
-});
+}, 10);
 
-// Touch suporte (mobile)
-document.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    jump();
-});
+const startGame = () =>  {
+    btnStartGame.style.visibility = 'hidden';
+    gameActive = true;
+    scoreCount = 0;
+    score.innerHTML = '0';
+    pipePassed = false;
+    
+    location.reload();
+}
 
-// Botão start
-elements.btnStart.addEventListener('click', resetGame);
+// Inicializar high score display
+updateHighScoreDisplay();
 
-// ===== INICIALIZAÇÃO =====
-// Mostrar high score
-const highScoreDisplay = document.createElement('div');
-highScoreDisplay.id = 'high-score';
-highScoreDisplay.style.cssText = `
-    color: white;
-    position: absolute;
-    top: 40px;
-    right: 10px;
-    font-family: Verdana, sans-serif;
-    font-weight: bold;
-    font-size: 14px;
-`;
-highScoreDisplay.textContent = `🏆 High: ${state.highScore}`;
-document.querySelector('.game-board').appendChild(highScoreDisplay);
-
-// Iniciar automaticamente
-setTimeout(startGame, 500);
+document.addEventListener('keydown', jump);

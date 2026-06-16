@@ -21,6 +21,19 @@
     overflow: hidden;
 }
 
+.grass {
+    width: 200%;
+    height: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-image: url('../images/mario-grass.png');
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+    background-position: 0 bottom;
+    animation: grass-animation 1.36s infinite linear;
+}
+
 .pipe {
     position: absolute;
     bottom: 0;
@@ -68,21 +81,31 @@
     animation: clauds-animation-3 15s infinite linear;
 }
 
+/* Container dos scores */
 .score-container {
     color: white;
     position: relative;
     font-family: Verdana, sans-serif;
     font-weight: bold;
     display: flex;
-    
+    gap: 5px;
 }
 
-#text-score {
+#text-score,
+#text-high-score,
+#score,
+#high-score {
     margin: 5px;
 }
 
+#text-high-score {
+    margin-left: 15px;
+}
+
+/* Score com efeito pop */
 #score {
-    margin: 5px;
+    display: inline-block;
+    transition: all 0.3s ease-out;
 }
 
 .start-container {
@@ -123,13 +146,22 @@
     width: 25px;
 }
 
+/* Animações */
 @keyframes pipe-animation {
     from {
         right: -80px;
     }
-
     to {
         right: 100%;
+    }
+}
+
+@keyframes grass-animation {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
     }
 }
 
@@ -137,15 +169,12 @@
     0% {
         bottom: 0; 
     }
-
     45% {
         bottom: 200px;
     }
-
     55% {
         bottom: 200px;
     }
-
     100% {
         bottom: 0;
     }
@@ -155,7 +184,6 @@
     50% {
         bottom: 180px;
     }
-
     100% {
         bottom: -80px;
     }
@@ -165,30 +193,49 @@
     from {
         right: -50px;
     }
-
     to {
         right: 100%;
     }
-
 }
 
 @keyframes clauds-animation-2 {
     from {
         right: -300px;
     }
-
     to {
         right: 100%;
     }
-
 }
 
 @keyframes clauds-animation-3 {
     from {
         right: -400px;
     }
-
     to {
         right: 100%;
     }
+}
+
+@keyframes score-pop {
+    0% {
+        transform: scale(1);
+        color: white;
+    }
+    50% {
+        transform: scale(1.5);
+        color: #FFD700;
+    }
+    100% {
+        transform: scale(1);
+        color: white;
+    }
+}
+
+.score-pop {
+    animation: score-pop 0.3s ease-out;
+}
+
+#high-score {
+    display: inline-block;
+    transition: all 0.3s ease-out;
 }
